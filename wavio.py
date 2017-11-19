@@ -281,6 +281,13 @@ def write(file, data, rate, scale=None, sampwidth=None):
 
         will write the values [0, 0, 100, 200, 255, 255] to the file.
 
+        If `scale` is the string "raw", then no clipping is performed, and
+        type conversion is performed only if necessary.  *IF* you know that the
+        input data is already in range, using "raw" scaling results in
+        substantial speedups when writing very large files (0.5-5.0 gig), but
+        if any samples are out of range, write() will throw an exception,
+        perhaps leaving a partly-created file...
+
     Example
     -------
     Create a 3 second 440 Hz sine wave, and save it in a 24-bit WAV file.
@@ -352,6 +359,9 @@ def write(file, data, rate, scale=None, sampwidth=None):
             vmin = ii.min
             vmax = ii.max
             data = _scale_to_sampwidth(data, sampwidth, vmin, vmax)
+    elif scale == "raw":
+        if data.dtype != outdtype:
+            data = data.astype(outdtype)
     else:
         if scale is None:
             vmin = data.min()
